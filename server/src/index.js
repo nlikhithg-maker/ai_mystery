@@ -3,7 +3,9 @@ import express from 'express'; import cors from 'cors'; import helmet from 'helm
 import { Investigation, User } from './models.js'; import { generateMystery } from './generator.js';
 
 const app = express(); const port = process.env.PORT || 5000;
-app.use(helmet()); app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' })); app.use(express.json({ limit: '100kb' })); app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 150 }));
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173').split(',').map((origin) => origin.trim()).filter(Boolean);
+app.set('trust proxy', 1);
+app.use(helmet()); app.use(cors({ origin: (origin, callback) => callback(null, !origin || allowedOrigins.includes(origin)) })); app.use(express.json({ limit: '100kb' })); app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 150 }));
 const tokenFor = (user) => jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 const auth = async (req, res, next) => { try { req.user = await User.findById(jwt.verify(req.headers.authorization?.replace('Bearer ', ''), process.env.JWT_SECRET).id); if (!req.user) throw Error(); next(); } catch { res.status(401).json({ message: 'Authentication required.' }); } };
 const safe = (m) => { const o = m.toObject ? m.toObject() : m; const { solution, ...publicCase } = o; return publicCase; };
