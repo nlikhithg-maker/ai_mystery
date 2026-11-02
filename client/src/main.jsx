@@ -5,7 +5,7 @@ import axios from 'axios';
 import { ArrowLeft, BookOpen, ClipboardList, Eye, Fingerprint, LogOut, Moon, Plus, Send, ShieldCheck, Sun, UserRound } from 'lucide-react';
 import './styles.css';
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || '/api' });
+const api = axios.create({ baseURL: '/api' });
 const Auth = createContext(null);
 const useAuth = () => useContext(Auth);
 const errText = (error) => error.response?.data?.message || 'Something went wrong. Please try again.';

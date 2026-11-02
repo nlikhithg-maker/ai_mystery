@@ -25,4 +25,11 @@ app.delete('/api/investigations/:id', auth, async (req, res) => { const item = a
 app.use((err, _, res, __) => { console.error(err); const duplicate = err?.code === 11000; const invalidId = err?.name === 'CastError'; const status = err instanceof z.ZodError ? 400 : duplicate ? 409 : invalidId ? 404 : 500; const message = err instanceof z.ZodError ? 'Please check your input.' : duplicate ? 'This record already exists.' : invalidId ? 'Resource not found.' : err.message?.includes('could not generate a valid case') ? err.message : 'Something went wrong. Please try again.'; res.status(status).json({ message }); });
 if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET must be set in the server environment.');
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI must be set in the server environment.');
-mongoose.connect(process.env.MONGODB_URI).then(() => app.listen(port, () => console.log(`API listening on ${port}`))).catch((e) => { console.error('MongoDB connection failed:', e.message); process.exit(1); });
+
+await mongoose.connect(process.env.MONGODB_URI);
+
+if (process.env.VERCEL !== '1') {
+  app.listen(port, () => console.log(`API listening on ${port}`));
+}
+
+export default app;
